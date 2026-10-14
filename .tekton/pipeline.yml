@@ -1,0 +1,83 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: oc-pipelines-oc-final
+spec:
+  description: Lint, test, build and deploy the Flask CI/CD sample service.
+  params:
+    - name: git-url
+      type: string
+      default: https://github.com/harshalsuryawanshi23/github-final-project.git
+    - name: git-revision
+      type: string
+      default: ci-cd-final-project
+    - name: image
+      type: string
+      description: Image destination in a registry writable by this OpenShift project.
+  workspaces:
+    - name: shared-workspace
+  tasks:
+    - name: cleanup
+      taskRef:
+        name: cleanup
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: git-clone
+      runAfter: [cleanup]
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+        - name: deleteExisting
+          value: "true"
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+    - name: flake8
+      runAfter: [git-clone]
+      taskRef:
+        name: flake8
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: nose
+      runAfter: [flake8]
+      taskRef:
+        name: nose
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: buildah
+      runAfter: [nose]
+      taskRef:
+        name: buildah
+      params:
+        - name: IMAGE
+          value: $(params.image)
+        - name: DOCKERFILE
+          value: ./Dockerfile
+        - name: CONTEXT
+          value: .
+        - name: TLSVERIFY
+          value: "true"
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+    - name: deploy
+      runAfter: [buildah]
+      taskRef:
+        name: openshift-client
+      params:
+        - name: SCRIPT
+          value: |
+            set -eu
+            oc create deployment ci-cd-final-project --image=$(params.image) --dry-run=client -o yaml | oc apply -f -
+            oc set env deployment/ci-cd-final-project PORT=8000
+            oc expose deployment ci-cd-final-project --port=8000 --target-port=8000 || true
+            oc rollout status deployment/ci-cd-final-project --timeout=120s
+        - name: VERSION
+          value: "latest"
