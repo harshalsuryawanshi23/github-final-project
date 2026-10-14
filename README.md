@@ -6,7 +6,7 @@ This repository contains a small Flask HTTP service and CI/CD configuration for 
 
 - **Project name:** CI/CD Final Project
 - **Application:** Flask service
-- **Runtime:** Python 3.10
+- **Runtime:** Python 3.9
 - **Application port:** 8000
 - **Health endpoint:** `/health`
 - **Run marker:** `SERVICERUNNING on port 8000`
