@@ -1,0 +1,29 @@
+GitHub Actions validation output
+Repository: harshalsuryawanshi23/github-final-project
+Branch: ci-cd-final-project
+Workflow: CI - lint and unit tests
+Run URL: https://github.com/harshalsuryawanshi23/github-final-project/actions/runs/38576235659
+Workflow run: #15
+Event: push
+Job: validate
+Conclusion: success
+
+Steps:
+- Set up job: success
+- Checkout source: success
+- Set up Python 3.9.25: success
+- Install dependencies: success
+- Lint with flake8: success
+- Run unit tests with nose: success
+- Post Set up Python: success
+- Post Checkout source: success
+- Complete job: success
+
+Unit test output:
+test_health_is_ok (test_app.ServiceRoutesTest) ... ok
+test_index_reports_service_running (test_app.ServiceRoutesTest) ... ok
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.052s
+
+OK
