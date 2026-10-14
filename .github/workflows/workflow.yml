@@ -1,0 +1,31 @@
+name: CI - lint and tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+
+      - name: Lint with ShellCheck
+        run: shellcheck simple-interest.sh
+
+      - name: Run unit tests
+        run: |
+          bash -n simple-interest.sh
+          test -x simple-interest.sh || chmod +x simple-interest.sh
+          output=$(printf '1000\n5\n2\n' | ./simple-interest.sh)
+          echo "$output"
+          echo "$output" | grep -Fq '100'
