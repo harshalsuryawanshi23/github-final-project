@@ -1,10 +1,10 @@
-name: CI - lint and tests
+name: CI - lint and unit tests
 
 on:
   push:
-    branches: [main]
+    branches: [main, ci-cd-final-project]
   pull_request:
-    branches: [main]
+    branches: [main, ci-cd-final-project]
   workflow_dispatch:
 
 jobs:
@@ -14,18 +14,16 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Install shellcheck
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y shellcheck
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
 
-      - name: Lint with ShellCheck
-        run: shellcheck simple-interest.sh
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && pip install -r requirements.txt
 
-      - name: Run unit tests
-        run: |
-          bash -n simple-interest.sh
-          test -x simple-interest.sh || chmod +x simple-interest.sh
-          output=$(printf '1000\n5\n2\n' | ./simple-interest.sh)
-          echo "$output"
-          echo "$output" | grep -Fq '100'
+      - name: Lint with flake8
+        run: flake8 service tests
+
+      - name: Run unit tests with nose
+        run: nosetests -v
